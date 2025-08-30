@@ -38,3 +38,25 @@ export const getAllTransactions = async (req, res, next) => {
         next(error)
     }
 }
+
+// update transaction
+export const UpdateTransaction = async (req, res, next) => {
+    const { id } = req.params;
+    const { user } = req.user._id;
+    console.log('Id', id, 'user', user)
+    try {
+        const transaction = await Transaction.findByIdAndUpdate(
+            {_id: id, createdBy: user},
+            req.body,
+            {new: true}
+        );
+        if(!transaction){
+            return res.status(401).json({
+                message: "Transaction not found"
+            })
+        }
+        res.status(200).json(transaction)
+    } catch (error) {
+        next(error)
+    }
+}
