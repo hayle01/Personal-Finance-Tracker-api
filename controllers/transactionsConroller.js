@@ -42,7 +42,7 @@ export const getAllTransactions = async (req, res, next) => {
 // update transaction
 export const UpdateTransaction = async (req, res, next) => {
     const { id } = req.params;
-    const { user } = req.user._id;
+    const user = req.user._id;
     console.log('Id', id, 'user', user)
     try {
         const transaction = await Transaction.findByIdAndUpdate(
