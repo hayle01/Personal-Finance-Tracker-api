@@ -84,7 +84,7 @@ npm run dev
 
 | Method | Endpoint         | Description         |
 | ------ | ---------------- | ------------------- |
-| POST   | /auth/signup | Register a new user |
+| POST   | /auth/register | Register a new user |
 | POST   | /auth/login  | Log in a user       |
 
 ### Transactions
@@ -113,11 +113,11 @@ Content-Type: application/json
 Authorization: Bearer <token>
 
 {
-  "title": "Freelance Payment",
-  "amount": 500,
-  "type": "income",
-  "category": "Work",
-  "date": "2025-08-29"
+  "title": "Groceries",
+  "amount": -50,
+  "type": "expense",
+  "category": "Food",
+  "date": "2025-05-27"
 }
 ```
 
