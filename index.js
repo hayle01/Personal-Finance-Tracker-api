@@ -9,6 +9,7 @@ import { notFound } from "./middlewares/notFound.js";
 import {limiter} from './middlewares/rateLimiter.js'
 import authRoute from './routes/auth.js';
 import transactionsRoute from './routes/transactions.js'
+import AdminRoute from './routes/admin.js'
 
 dotenv.config();
 const app = express();
@@ -26,6 +27,7 @@ app.use(limiter)
 // Routes
 app.use('/auth', authRoute)
 app.use('/transactions', transactionsRoute)
+app.use('/admin', AdminRoute)
 
 
 app.use(notFound)
