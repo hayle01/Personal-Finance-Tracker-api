@@ -81,3 +81,88 @@ export const deleteTransaction = async (req, res, next) => {
         next(error)
     }
 }
+
+
+//monthly-summary
+export const summury = async (req, res, next) => {
+  try {
+    const userId = req.user._id; 
+    const { month, year } = req.query;
+
+    // Default to current month/year
+    const now = new Date();
+    const monthNum = month ? parseInt(month) - 1 : now.getMonth();
+    const yearNum = year ? parseInt(year) : now.getFullYear();
+    // console.log('monthNum', monthNum)
+    // console.log('yearNum', yearNum)
+    const startDate = new Date(Date.UTC(yearNum, monthNum, 1, 0, 0, 0));
+    const endDate = new Date(Date.UTC(yearNum, monthNum + 1, 1, 0, 0, 0));
+    // console.log('startDate', startDate);
+    // console.log('endDate', endDate)
+
+    const summary = await Transaction.aggregate([
+      {
+        $match: {
+          createdBy: userId,
+          date: { $gte: startDate, $lt: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: { category: "$category", type: "$type" },
+          totalAmount: { $sum: "$amount" },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id.category",
+          totals: {
+            $push: { type: "$_id.type", amount: "$totalAmount" },
+          },
+        },
+      },
+      {
+        $project: {
+          category: "$_id",
+          _id: 0,
+          totalSpent: {
+            $sum: {
+              $map: {
+                input: {
+                  $filter: {
+                    input: "$totals",
+                    cond: { $eq: ["$$this.type", "expense"] },
+                  },
+                },
+                as: "t",
+                in: "$$t.amount",
+              },
+            },
+          },
+          totalEarned: {
+            $sum: {
+              $map: {
+                input: {
+                  $filter: {
+                    input: "$totals",
+                    cond: { $eq: ["$$this.type", "income"] },
+                  },
+                },
+                as: "t",
+                in: "$$t.amount",
+              },
+            },
+          },
+        },
+      },
+       {
+        $sort: { totalSpent: -1, category: 1 } // <-- order by totalSpent descending, then category ascending
+      }
+    ]);
+
+    res.json({ summary });
+  } catch (err) {
+    console.error(err);
+    next(err)
+  }
+};
