@@ -13,7 +13,7 @@ const options = {
     },
     servers: [
       {
-        url: process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://personal-finance-tracker-api-tcxh.onrender.com'
+        url: process.env.SWAGGER_BASE_URL || 'http://localhost:3000'
       }
     ],
     components: {
