@@ -2,7 +2,7 @@ import express from "express";
 import {validateZod} from '../middlewares/validateZod.js';
 import {protect} from '../middlewares/Auth.js'
 import {createUserSchema} from '../schema/userSchemas.js'
-import { login, registerUser } from "../controllers/auth.js";
+import { getMe, login, registerUser } from "../controllers/auth.js";
 import {upload} from '../middlewares/upload.js'
 import {updloadFile} from '../controllers/uploadController.js'
 const router = express.Router();
@@ -147,5 +147,60 @@ router.post('/login', login);
  *         description: Server error
  */
 router.post('/profile', protect, upload.single('file'), updloadFile);
-
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     tags:
+ *       - Authentication
+ *     summary: Get current authenticated user
+ *     description: Returns the profile information of the logged-in user. Requires a valid JWT token.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: 68b1e7f8ac63e04c70a77ee7
+ *                     name:
+ *                       type: string
+ *                       example: John Doe
+ *                     email:
+ *                       type: string
+ *                       example: john@example.com
+ *                     profile:
+ *                       type: string
+ *                       example: https://example.com/profile.jpg
+ *                     role:
+ *                       type: string
+ *                       enum: [user, admin]
+ *                       example: user
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: 2025-08-01T12:00:00.000Z
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: 2025-08-30T09:50:49.706Z
+ *       401:
+ *         description: Unauthorized – user not logged in
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+router.get('/me', protect, getMe);
 export default router;
