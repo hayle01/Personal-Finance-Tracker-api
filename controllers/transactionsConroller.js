@@ -45,17 +45,21 @@ export const UpdateTransaction = async (req, res, next) => {
     const user = req.user._id;
     console.log('Id', id, 'user', user)
     try {
-        const transaction = await Transaction.findByIdAndUpdate(
+        const transaction = await Transaction.findOneAndUpdate(
             {_id: id, createdBy: user},
             req.body,
             {new: true}
         );
         if(!transaction){
             return res.status(401).json({
+                success: false,
                 message: "Transaction not found"
             })
         }
-        res.status(200).json(transaction)
+        res.status(200).json({
+          success: true,
+          data: transaction
+        })
     } catch (error) {
         next(error)
     }
@@ -70,7 +74,7 @@ export const deleteTransaction = async (req, res, next) => {
             {_id: id, createdBy: user}
         )
         if(!transaction){
-            return res.status(401).json({
+            return res.status(404).json({
                 message: "Transaction not found"
             })
         }
