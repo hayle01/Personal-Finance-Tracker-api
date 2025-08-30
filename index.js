@@ -4,6 +4,8 @@ import morgan from "morgan";
 import dotenv from 'dotenv';
 import helmet from "helmet";
 import mongoose from "mongoose";
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from "./utils/swagger.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { notFound } from "./middlewares/notFound.js";
 import {limiter} from './middlewares/rateLimiter.js'
@@ -24,6 +26,7 @@ if(process.env.NODE_ENV === 'development'){
 
 app.use(limiter)
 
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 // Routes
 app.use('/auth', authRoute)
 app.use('/transactions', transactionsRoute)

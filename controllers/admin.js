@@ -15,11 +15,11 @@ export const overview = async (req, res, next) => {
                totalAmount: { $sum: "$amount" }
             }}
         ])
-        let totalIncome = 0;
-        let totalExpense = 0;
+        let totalIncomes = 0;
+        let totalExpenses = 0;
         totals.forEach((t) => {
-            if(t._id === "income") totalIncome = t.totalAmount;
-            if(t._id === "expense") totalExpense = t.totalAmount; 
+            if(t._id === "income") totalIncomes = t.totalAmount;
+            if(t._id === "expense") totalExpenses = t.totalAmount; 
         })
         // top spending categories
         const topSpendingCategories = await Transaction.aggregate([
@@ -39,8 +39,8 @@ export const overview = async (req, res, next) => {
         res.json({
             totalUsers,
             totalTransactions,
-            totalIncome,
-            totalExpense,
+            totalIncomes,
+            totalExpenses,
             topSpendingCategories
         });
     } catch (error) {
