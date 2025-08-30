@@ -60,3 +60,24 @@ export const UpdateTransaction = async (req, res, next) => {
         next(error)
     }
 }
+
+// delete transaction
+export const deleteTransaction = async (req, res, next) => {
+    const { id } = req.params;
+    const user = req.user._id;
+    try {
+        const transaction = await Transaction.findByIdAndDelete(
+            {_id: id, createdBy: user}
+        )
+        if(!transaction){
+            return res.status(401).json({
+                message: "Transaction not found"
+            })
+        }
+        res.status(200).json({
+            message: "Transaction deleted successfully"
+        })
+    } catch (error) {
+        next(error)
+    }
+}
