@@ -13,10 +13,10 @@ export const updloadFile = (req, res, next) => {
             if(error){
                 next(error)
             }
-            await User.findByIdAndUpdate(req.user?._id, {profile: result.secure_url});
+            const user = await User.findByIdAndUpdate(req.user?._id, {profile: result.secure_url}, {new: true}).select('-password');
             return res.status(201).json({
                 success: true,
-                fileUrl: result.secure_url
+                user
             })
         }
     )

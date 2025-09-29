@@ -11,7 +11,8 @@ import { notFound } from "./middlewares/notFound.js";
 import {limiter} from './middlewares/rateLimiter.js'
 import authRoute from './routes/auth.js';
 import transactionsRoute from './routes/transactions.js'
-import AdminRoute from './routes/admin.js'
+import AdminRoute from './routes/admin.js';
+import userRoute from './routes/users.js';
 
 dotenv.config();
 const app = express();
@@ -26,12 +27,16 @@ if(process.env.NODE_ENV === 'development'){
 
 app.use(limiter)
 
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 // Routes
-app.use('/auth', authRoute)
-app.use('/transactions', transactionsRoute)
-app.use('/admin', AdminRoute)
+app.use('/api/auth', authRoute)
+app.use('/api/transactions', transactionsRoute)
+app.use('/api/users', userRoute);
+app.use('/api/admin', AdminRoute)
 
+app.use('/api/', (req, res) => {
+    res.send('Welcome to the Expense Tracker API v1.0.0');
+})
 
 app.use(notFound)
 

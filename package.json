@@ -5,8 +5,10 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js"
+    "server": "nodemon backend/index.js",
+    "start": "node backend/index.js",
+    "client": "npm run dev --prefix frontend",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
   },
   "author": "moabdirahim",
   "license": "ISC",
@@ -26,5 +28,8 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "zod": "^4.1.4"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }
