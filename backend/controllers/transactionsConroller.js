@@ -86,25 +86,39 @@ export const deleteTransaction = async (req, res, next) => {
     }
 }
 
-
-//monthly-summary
-export const summury = async (req, res, next) => {
+// summary by period
+export const summaryByPeriod = async (req, res, next) => {
   try {
-    const userId = req.user._id; 
-    const { month, year } = req.query;
+    const userId = req.user._id;
+    const { period } = req.query;
 
-    // Default to current month/year
     const now = new Date();
-    const monthNum = month ? parseInt(month) - 1 : now.getMonth();
-    const yearNum = year ? parseInt(year) : now.getFullYear();
-    // console.log('monthNum', monthNum)
-    // console.log('yearNum', yearNum)
-    const startDate = new Date(Date.UTC(yearNum, monthNum, 1, 0, 0, 0));
-    const endDate = new Date(Date.UTC(yearNum, monthNum + 1, 1, 0, 0, 0));
-    // console.log('startDate', startDate);
-    // console.log('endDate', endDate)
+    let startDate, endDate;
 
-    const summary = await Transaction.aggregate([
+    switch (period) {
+      case "this_month":
+        startDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1, 0, 0, 0));
+        endDate = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0));
+        break;
+
+      case "last_month":
+        startDate = new Date(Date.UTC(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0));
+        endDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1, 0, 0, 0));
+        break;
+
+      case "this_year":
+        startDate = new Date(Date.UTC(now.getFullYear(), 0, 1, 0, 0, 0));
+        endDate = new Date(Date.UTC(now.getFullYear() + 1, 0, 1, 0, 0, 0));
+        break;
+
+      case "all":
+      default:
+        startDate = new Date(0);
+        endDate = new Date(); 
+        break;
+    }
+
+    const raw = await Transaction.aggregate([
       {
         $match: {
           createdBy: userId,
@@ -159,14 +173,30 @@ export const summury = async (req, res, next) => {
           },
         },
       },
-       {
-        $sort: { totalSpent: -1, category: 1 } // <-- order by totalSpent descending, then category ascending
-      }
     ]);
 
-    res.json({ summary });
+    // Reshape for frontend
+let income = 0;
+let expense = 0;
+const expensesByCategory = [];
+const incomesByCategory = [];
+
+raw.forEach((row) => {
+  income += row.totalEarned;
+  expense += row.totalSpent;
+
+  if (row.totalSpent > 0) {
+    expensesByCategory.push({ name: row.category, value: row.totalSpent });
+  }
+  if (row.totalEarned > 0) {
+    incomesByCategory.push({ name: row.category, value: row.totalEarned });
+  }
+});
+
+res.json({ income, expense, expensesByCategory, incomesByCategory });
+
   } catch (err) {
     console.error(err);
-    next(err)
+    next(err);
   }
 };

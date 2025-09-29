@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useLocation } from "react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -9,60 +9,92 @@ import {
 import useAuthStore from "../lib/Store/authStore";
 
 export const Navbar = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { user, clearAuth, isAuthenticated } = useAuthStore();
 
   const handleLogout = () => {
     clearAuth();
     navigate("/");
   };
+
+  const navItems = [
+    { path: "/dashboard", label: "Dashboard" },
+    { path: "/transactions", label: "Transactions" },
+    { path: "/analytics", label: "Analytics" },
+  ];
+
   return (
-    <>
-     {/* HEADER */}
-      <header className="shadow-md bg-white">
-        <div className="container mx-auto flex items-center justify-between py-4 px-6">
+    <header className="border-b bg-white">
+      <div className="container mx-auto flex items-center justify-between py-4 px-6">
         {/* Logo */}
         <Link to="/" className="text-xl font-bold text-primary">
           💰 Finance Tracker
         </Link>
 
+        {/* Navigation Links */}
         <div className="flex items-center space-x-4">
-
-        {isAuthenticated && (
-          <>
-               {/* Welcome text (hidden on small screens) */}
-        <div className="hidden md:block text-muted-foreground">
-          Welcome, <span className="text-gray-600 font-medium">{user?.name ? user.name : "Guest"}</span> 
+          {isAuthenticated &&
+            navItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`text-sm font-medium px-3 py-1 rounded transition ${
+                    isActive
+                      ? "bg-secondary text-blue-600 border border-gray-300"
+                      : "text-primary hover:bg-gray-100"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
         </div>
 
-        {/* Avatar Menu */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Avatar className="cursor-pointer">
-              <AvatarImage src={user?.profile} alt="avatar" />
-              <AvatarFallback className='font-medium'>{user?.name?.[0] ?? "U"}</AvatarFallback>
-            </Avatar>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuItem onClick={() => navigate("/dashboard")}>
-              Dashboard
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/profile")}>
-              Profile
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-          </>
-        )}
-          {!isAuthenticated && (
-            <Link to="/login" className="text-sm font-medium text-primary border bg-secondary px-4 py-2 rounded transition">
+        {/* Right side: Avatar / Login */}
+        <div className="flex items-center space-x-4">
+          {isAuthenticated ? (
+            <>
+              {/* Welcome text */}
+              <div className="hidden md:block text-muted-foreground">
+                Hello,{" "}
+                <span className="text-gray-600 font-medium">
+                  {user?.name ?? "Guest"}
+                </span>
+              </div>
+
+              {/* Avatar Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Avatar
+                    className="cursor-pointer w-11 h-11 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary transition"
+                  >
+                    <AvatarImage src={user?.profile} alt="avatar" />
+                    <AvatarFallback className="font-medium">
+                      {user?.name?.[0] ?? "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-40" align="end">
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className="text-sm font-medium text-primary border bg-secondary px-4 py-2 rounded transition hover:bg-secondary/90"
+            >
               Login
-            </Link> 
-          ) }
+            </Link>
+          )}
         </div>
-        </div>
-      </header>
-    </>
-  )
-}
+      </div>
+    </header>
+  );
+};

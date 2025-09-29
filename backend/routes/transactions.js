@@ -1,7 +1,7 @@
 import express from "express";
 import { protect } from "../middlewares/Auth.js";
 import { validateZod } from "../middlewares/validateZod.js";
-import { createTransaction, deleteTransaction, getAllTransactions, summury, UpdateTransaction } from "../controllers/transactionsConroller.js";
+import { createTransaction, deleteTransaction, getAllTransactions, summaryByPeriod, UpdateTransaction } from "../controllers/transactionsConroller.js";
 import { createTransactionSchema } from "../schema/transactionsSchemas.js";
 const router = express.Router();
 /**
@@ -336,5 +336,5 @@ router.delete('/:id', protect, deleteTransaction);
  *       500:
  *         description: Server error
  */
-router.get('/monthly-summary', protect, summury);
+router.get("/summary", protect, summaryByPeriod);
 export default router;
