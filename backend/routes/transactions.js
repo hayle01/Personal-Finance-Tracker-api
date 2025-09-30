@@ -1,7 +1,7 @@
 import express from "express";
 import { protect } from "../middlewares/Auth.js";
 import { validateZod } from "../middlewares/validateZod.js";
-import { createTransaction, deleteTransaction, getAllTransactions, summaryByPeriod, UpdateTransaction } from "../controllers/transactionsConroller.js";
+import { createTransaction, deleteTransaction, getAllTransactions, getLatestTransactions, summaryByPeriod, UpdateTransaction } from "../controllers/transactionsConroller.js";
 import { createTransactionSchema } from "../schema/transactionsSchemas.js";
 const router = express.Router();
 /**
@@ -146,6 +146,7 @@ router.post('/', protect, validateZod(createTransactionSchema), createTransactio
  *         description: Server error
  */
 router.get('/', protect, getAllTransactions);
+router.get('/latest', protect, getLatestTransactions);
 /**
  * @swagger
  * /transactions/{id}:

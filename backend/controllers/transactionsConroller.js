@@ -20,6 +20,21 @@ export const createTransaction = async (req, res, next) => {
         next(error)
     }
 }
+// get latest transactions
+export const getLatestTransactions = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const transactions = await Transaction.find({ createdBy: userId })
+      .sort({ date: -1 })
+      .limit(limit);
+
+    res.status(200).json(transactions);
+  } catch (error) {
+    next(error);
+  }
+};
 
 // Get all transactions
 export const getAllTransactions = async (req, res, next) => {
@@ -86,6 +101,7 @@ export const deleteTransaction = async (req, res, next) => {
     }
 }
 
+
 // summary by period
 export const summaryByPeriod = async (req, res, next) => {
   try {
@@ -93,108 +109,125 @@ export const summaryByPeriod = async (req, res, next) => {
     const { period } = req.query;
 
     const now = new Date();
-    let startDate, endDate;
+    let startDate, endDate, prevStartDate, prevEndDate;
 
     switch (period) {
       case "this_month":
-        startDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1, 0, 0, 0));
-        endDate = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0));
+        startDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1));
+        endDate = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 1));
+
+        prevStartDate = new Date(Date.UTC(now.getFullYear(), now.getMonth() - 1, 1));
+        prevEndDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1));
         break;
 
       case "last_month":
-        startDate = new Date(Date.UTC(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0));
-        endDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1, 0, 0, 0));
+        startDate = new Date(Date.UTC(now.getFullYear(), now.getMonth() - 1, 1));
+        endDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1));
+
+        prevStartDate = new Date(Date.UTC(now.getFullYear(), now.getMonth() - 2, 1));
+        prevEndDate = new Date(Date.UTC(now.getFullYear(), now.getMonth() - 1, 1));
         break;
 
       case "this_year":
-        startDate = new Date(Date.UTC(now.getFullYear(), 0, 1, 0, 0, 0));
-        endDate = new Date(Date.UTC(now.getFullYear() + 1, 0, 1, 0, 0, 0));
+        startDate = new Date(Date.UTC(now.getFullYear(), 0, 1));
+        endDate = new Date(Date.UTC(now.getFullYear() + 1, 0, 1));
+
+        prevStartDate = new Date(Date.UTC(now.getFullYear() - 1, 0, 1));
+        prevEndDate = new Date(Date.UTC(now.getFullYear(), 0, 1));
         break;
 
       case "all":
       default:
         startDate = new Date(0);
-        endDate = new Date(); 
+        endDate = new Date();
+        prevStartDate = null;
+        prevEndDate = null;
         break;
     }
 
-    const raw = await Transaction.aggregate([
-      {
-        $match: {
-          createdBy: userId,
-          date: { $gte: startDate, $lt: endDate },
-        },
-      },
-      {
-        $group: {
-          _id: { category: "$category", type: "$type" },
-          totalAmount: { $sum: "$amount" },
-        },
-      },
-      {
-        $group: {
-          _id: "$_id.category",
-          totals: {
-            $push: { type: "$_id.type", amount: "$totalAmount" },
+    // total income & expense
+    const aggregateTotals = async (s, e) => {
+      if (!s || !e) return { income: 0, expense: 0 };
+
+      const raw = await Transaction.aggregate([
+        { $match: { createdBy: userId, date: { $gte: s, $lt: e } } },
+        {
+          $group: {
+            _id: "$type",
+            totalAmount: { $sum: "$amount" },
           },
         },
-      },
-      {
-        $project: {
-          category: "$_id",
-          _id: 0,
-          totalSpent: {
-            $sum: {
-              $map: {
-                input: {
-                  $filter: {
-                    input: "$totals",
-                    cond: { $eq: ["$$this.type", "expense"] },
-                  },
-                },
-                as: "t",
-                in: "$$t.amount",
-              },
+      ]);
+
+      let income = 0;
+      let expense = 0;
+      raw.forEach((r) => {
+        if (r._id === "income") income = r.totalAmount;
+        if (r._id === "expense") expense = r.totalAmount;
+      });
+      return { income, expense };
+    };
+
+    // grouped by category
+    const aggregateByCategory = async (s, e, type) => {
+      if (!s || !e) return [];
+      const raw = await Transaction.aggregate([
+        {
+          $match: {
+            createdBy: userId,
+            type,
+            date: { $gte: s, $lt: e },
+          },
+        },
+        {
+          $group: {
+            _id: "$category",
+            total: { $sum: "$amount" },
+          },
+        },
+        { $sort: { total: -1 } },
+        {
+          $project: {
+            _id: 0,
+            name: "$_id",  
+            value: "$total",
+          },
+        },
+      ]);
+      return raw;
+    };
+
+    const current = await aggregateTotals(startDate, endDate);
+    const previous = await aggregateTotals(prevStartDate, prevEndDate);
+
+    const expensesByCategory = await aggregateByCategory(startDate, endDate, "expense");
+    const incomesByCategory = await aggregateByCategory(startDate, endDate, "income");
+
+    // % change
+    const calcChange = (curr, prev) => {
+      if (prev === 0 && curr > 0) return 100;
+      if (prev === 0 && curr === 0) return 0;
+      return (((curr - prev) / prev) * 100).toFixed(1);
+    };
+
+    res.json({
+      income: current.income,
+      expense: current.expense,
+      balance: current.income - current.expense,
+      changes:
+        period === "all"
+          ? null
+          : {
+              income: calcChange(current.income, previous.income),
+              expense: calcChange(current.expense, previous.expense),
+              balance: calcChange(
+                current.income - current.expense,
+                previous.income - previous.expense
+              ),
             },
-          },
-          totalEarned: {
-            $sum: {
-              $map: {
-                input: {
-                  $filter: {
-                    input: "$totals",
-                    cond: { $eq: ["$$this.type", "income"] },
-                  },
-                },
-                as: "t",
-                in: "$$t.amount",
-              },
-            },
-          },
-        },
-      },
-    ]);
-
-    // Reshape for frontend
-let income = 0;
-let expense = 0;
-const expensesByCategory = [];
-const incomesByCategory = [];
-
-raw.forEach((row) => {
-  income += row.totalEarned;
-  expense += row.totalSpent;
-
-  if (row.totalSpent > 0) {
-    expensesByCategory.push({ name: row.category, value: row.totalSpent });
-  }
-  if (row.totalEarned > 0) {
-    incomesByCategory.push({ name: row.category, value: row.totalEarned });
-  }
-});
-
-res.json({ income, expense, expensesByCategory, incomesByCategory });
-
+      expensesByCategory,
+      incomesByCategory,
+    });
   } catch (err) {
     console.error(err);
     next(err);
