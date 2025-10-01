@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader } from "lucide-react";
 import { useState } from "react";
 
@@ -7,7 +7,7 @@ import { DashboardMetrics } from "../components/dashboard/DashboardMetrics";
 import { DashboardWelcome } from "../components/dashboard/DashboardWelcome ";
 import { ExpensesByCategory } from "../components/dashboard/ExpensesByCategory";
 import { TransactionsList } from "../components/dashboard/TransactionsList";
-import api from "../lib/api/ApiClient";
+import api from "../lib/api/apiClient";
 
 export const Dashboard = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -37,22 +37,6 @@ export const Dashboard = () => {
     retry: 1,
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: async (id) => {
-      const res = await api.delete(`/transactions/${id}`);
-      return res.data;
-    },
-    onSuccess: () => {
-      toast.success("Transaction deleted successfully.");
-      queryClient.invalidateQueries({
-        queryKey: ["transactions", selectedPeriod],
-      });
-      queryClient.invalidateQueries({ queryKey: ["summary", selectedPeriod] }); 
-    },
-    onError: () => {
-      toast.error("Failed to delete transaction.");
-    },
-  });
 
   const handleCloseForm = () => {
     setShowCreateForm(false);
@@ -63,13 +47,12 @@ export const Dashboard = () => {
     setShowCreateForm(true);
   };
 
-  const handleEdit = (transaction) => console.log("Edit:", transaction);
+  const handleEdit = (transaction) => {
+    console.log("Edit:", transaction);
+    setEditingTransaction(transaction);
+    setShowCreateForm(true); 
+  }
 
-  const handleDelete = (transaction) => {
-    console.log("Transaction to delete:", transaction);
-    console.log("Deleting transaction id:", transaction._id);
-    deleteMutation.mutate(transaction._id);
-  };
 
   if (summaryQuery.isLoading || transactionsQuery.isLoading) {
     return (
@@ -112,7 +95,6 @@ export const Dashboard = () => {
               <TransactionsList
                 transactions={transactionsQuery.data || []}
                 onEdit={handleEdit}
-                onDelete={handleDelete}
                 selectedPeriod={selectedPeriod}
               />
             )}

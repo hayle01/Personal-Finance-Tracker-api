@@ -2,7 +2,7 @@ import { TransactionRow } from "./TransactionRow";
 import { Card, CardDescription, CardHeader, CardTitle,CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
 
-export const TransactionsList = ({ transactions, onEdit, onDelete, selectedPeriod }) => {
+export const TransactionsList = ({ transactions, onEdit, selectedPeriod }) => {
   return (
     <Card variant="outline" className="rounded-md border border-border">
       <CardHeader className="px-4">
@@ -35,7 +35,6 @@ export const TransactionsList = ({ transactions, onEdit, onDelete, selectedPerio
                   key={tx._id || tx.date + tx.title}
                   transaction={tx}
                   onEdit={onEdit}
-                  onDelete={onDelete}
                   selectedPeriod={selectedPeriod}
                 />
               ))}

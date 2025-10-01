@@ -19,7 +19,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import api from "../../lib/api/ApiClient";
+import api from "../../lib/api/apiClient";
 import { Loader } from "lucide-react";
 import { extractErrorMessages } from "../../utils/errorUtils";
 

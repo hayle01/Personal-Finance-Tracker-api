@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Edit2, MoreVertical, Trash2 } from "lucide-react";
 import {
@@ -18,19 +18,46 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import api from "../../lib/api/apiClient";
 
-
-export const TransactionRow = ({ transaction, onEdit, onDelete, selectedPeriod }) => {
-
+export const TransactionRow = ({ transaction, onEdit, selectedPeriod }) => {
   console.log("Selected Period in TransactionRow:", selectedPeriod);
 
   const { date, title, amount, category, type, _id } = transaction;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
+  const queryClient = useQueryClient();
+
+  // TODO: Delete transaction mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
+      const res = await api.delete(`/transactions/${id}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success("Transaction deleted successfully.");
+      queryClient.invalidateQueries({
+        queryKey: ["transactions", selectedPeriod],
+      });
+      queryClient.invalidateQueries({ queryKey: ["summary", selectedPeriod] });
+    },
+    onError: () => {
+      toast.error("Failed to delete transaction.");
+    },
+  });
 
   const handleConfirmDelete = () => {
-    onDelete(transaction);
-    setShowDeleteDialog(false);
+    try {
+      console.log("Transaction to delete:", transaction);
+      console.log("Deleting transaction id:", transaction._id);
+      deleteMutation.mutateAsync(_id);
+      setShowDeleteDialog(false);
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
+      toast.error("Failed to delete the task. Please try again.");
+    }
   };
 
   return (
@@ -40,7 +67,8 @@ export const TransactionRow = ({ transaction, onEdit, onDelete, selectedPeriod }
         <td className="px-4 py-2">{title}</td>
         <td className="px-4 py-2">{category}</td>
         <td className="px-4 py-2">
-          <span className={type === "income" ? "text-green-500" : "text-red-500"}>
+          <span
+            className={type === "income" ? "text-green-500" : "text-red-500"}>
             {type === "income" ? `+$${amount}` : `-$${amount}`}
           </span>
         </td>
@@ -69,7 +97,8 @@ export const TransactionRow = ({ transaction, onEdit, onDelete, selectedPeriod }
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the transaction <span className="font-medium">"{title}"</span>.
+              This action cannot be undone. This will permanently delete the
+              transaction <span className="font-medium">"{title}"</span>.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -77,9 +106,8 @@ export const TransactionRow = ({ transaction, onEdit, onDelete, selectedPeriod }
             <AlertDialogAction
               onClick={handleConfirmDelete}
               className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
-              disabled={onDelete.isLoading}
-            >
-              {onDelete.isLoading ? "Deleting..." : "Delete"}
+              disabled={deleteMutation.isLoading}>
+              {deleteMutation.isLoading ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
