@@ -2,7 +2,11 @@ import axios from 'axios';
 
 import useAuthStore from '../Store/authStore';
 
-const API_URL = 'https://personal-finance-tracker-api-tcxh.onrender.com/api'; 
+const API_URL =
+    process.env.NODE_ENV === 'production'
+        ? 'https://personal-finance-tracker-api-tcxh.onrender.com/api'
+        : 'http://localhost:3000/api';
+
 
 const api = axios.create({
     baseURL: API_URL,
