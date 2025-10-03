@@ -22,7 +22,7 @@ export const DashboardWelcome = ({
       </div>
 
       {/* Right side: controls */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center flex-wrap gap-3">
         {/* Period selector */}
         <div className="inline-flex overflow-hidden">
           {periods.map((p) => (
