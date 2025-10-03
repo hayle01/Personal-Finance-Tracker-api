@@ -8,7 +8,8 @@
     "server": "nodemon backend/index.js",
     "start": "node backend/index.js",
     "client": "npm run dev --prefix frontend",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "build": "npm install && npm install --prefix frontend --production=false && npm run build --prefix frontend"
   },
   "author": "moabdirahim",
   "license": "ISC",
