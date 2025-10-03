@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { LoaderCircle } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useMutation } from "@tanstack/react-query";
-import api from "../../lib/api/ApiClient";
+import api from "@/lib/api/apiClient";
 import { extractErrorMessages } from "../../utils/errorUtils";
 import useAuthStore from "../../lib/Store/authStore";
 export const LoginForm = () => {
