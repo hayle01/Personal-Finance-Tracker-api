@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Loader } from "lucide-react";
 import { useState } from "react";
 
@@ -6,6 +6,7 @@ import { AddTransactionForm } from "../components/dashboard/AddTransactionForm";
 import { DashboardMetrics } from "../components/dashboard/DashboardMetrics";
 import { DashboardWelcome } from "../components/dashboard/DashboardWelcome ";
 import { ExpensesByCategory } from "../components/dashboard/ExpensesByCategory";
+import { IncomesByCategory } from "../components/dashboard/IncomesByCategory";
 import { TransactionsList } from "../components/dashboard/TransactionsList";
 import api from "../lib/api/apiClient";
 
@@ -14,7 +15,6 @@ export const Dashboard = () => {
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [selectedPeriod, setSelectedPeriod] = useState("this_month");
 
-  const queryClient = useQueryClient();
   // fetch summary by period
   const summaryQuery = useQuery({
     queryKey: ["summary", selectedPeriod],
@@ -37,7 +37,6 @@ export const Dashboard = () => {
     retry: 1,
   });
 
-
   const handleCloseForm = () => {
     setShowCreateForm(false);
     setEditingTransaction(null);
@@ -50,9 +49,8 @@ export const Dashboard = () => {
   const handleEdit = (transaction) => {
     console.log("Edit:", transaction);
     setEditingTransaction(transaction);
-    setShowCreateForm(true); 
-  }
-
+    setShowCreateForm(true);
+  };
 
   if (summaryQuery.isLoading || transactionsQuery.isLoading) {
     return (
@@ -88,6 +86,11 @@ export const Dashboard = () => {
               data={summaryQuery.data?.expensesByCategory || []}
             />
           </div>
+          {/* <div className="col-span-1">
+            <IncomesByCategory
+              data={summaryQuery.data?.incomesByCategory || []}
+            />
+          </div> */}
 
           {/* Latest Transactions */}
           <div className="col-span-1 md:col-span-2">
@@ -96,6 +99,8 @@ export const Dashboard = () => {
                 transactions={transactionsQuery.data || []}
                 onEdit={handleEdit}
                 selectedPeriod={selectedPeriod}
+                title="Latest Transactions"
+                description="Check your last transactions here."
               />
             )}
           </div>

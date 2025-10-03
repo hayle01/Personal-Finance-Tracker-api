@@ -20,6 +20,12 @@ const transactionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+transactionSchema.index({ createdBy: 1, date: -1 });
+transactionSchema.index({ createdBy: 1, category: 1 });
+transactionSchema.index({ createdBy: 1, type: 1 });
+transactionSchema.index({ createdBy: 1, title: 1 });
+
+
 const Transaction = mongoose.model("Transaction", transactionSchema);
 
 export default Transaction;
