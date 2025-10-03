@@ -1,8 +1,8 @@
 import { useState } from "react";
-import api from "../../lib/api/ApiClient";
+
 import useAuthStore from "../../lib/Store/authStore";
 import { useMutation } from "@tanstack/react-query";
-
+import api from "../../lib/api/apiClient"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,42 +48,6 @@ const updateMutation = useMutation({
   },
 });
 
-
-// const handleSubmit = async (e) => {
-//   e.preventDefault();
-//   try {
-//     setIsSaving(true);
-//     let updatedUser = user;
-
-//     // Upload profile
-//     if (file) {
-//       const uploadRes = await uploadMutation.mutateAsync();
-//       updatedUser = uploadRes.user;
-//     }
-
-//     // Name/email changed (with or without file)
-//     if (name !== user.name || email !== user.email) {
-//       updatedUser = await updateMutation.mutateAsync({
-//         name,
-//         email,
-//         profile: updatedUser.profile
-//       });
-//     }
-
-//     // Save in auth store
-//     setAuth(updatedUser, useAuthStore.getState().token);
-//     setFile(null);
-//     setIsEditing(false);
-
-//     toast.success("Profile updated successfully");
-//     console.log("Final updated user:", updatedUser);
-//   } catch (err) {
-//     console.error("Profile update failed:", err);
-//     toast.error("Failed to update profile");
-//   } finally {
-//     setIsSaving(false);
-//   }
-// };
 
 const handleSubmit = async (e) => {
   e.preventDefault();
