@@ -8,7 +8,7 @@ import { DashboardWelcome } from "../components/dashboard/DashboardWelcome ";
 import { ExpensesByCategory } from "../components/dashboard/ExpensesByCategory";
 import { IncomesByCategory } from "../components/dashboard/IncomesByCategory";
 import { TransactionsList } from "../components/dashboard/TransactionsList";
-import api from "../lib/api/apiClient";
+import api from "@/lib/api/apiClient";
 
 export const Dashboard = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
