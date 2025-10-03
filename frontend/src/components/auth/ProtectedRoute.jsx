@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import useAuthStore from "../../lib/Store/authStore";
 import { useQuery } from "@tanstack/react-query";
-import api from "../../lib/api/ApiClient";
+import api from "@/lib/api/apiClient";
 import { Navigate, useLocation } from "react-router";
 import { Loader } from "lucide-react";
 
