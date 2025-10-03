@@ -3,6 +3,8 @@ import cors from 'cors';
 import morgan from "morgan";
 import dotenv from 'dotenv';
 import helmet from "helmet";
+import path from 'path';
+import { fileURLToPath } from 'url';
 import mongoose from "mongoose";
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from "./utils/swagger.js";
@@ -37,6 +39,21 @@ app.use('/api/admin', AdminRoute)
 app.use('/api/', (req, res) => {
     res.send('Welcome to the Expense Tracker API v1.0.0');
 })
+
+// Server frontend in production
+if (process.env.NODE_ENV === "production") {
+
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+    app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+    // Serve the frontend app
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'));
+});
+
+}
 
 app.use(notFound)
 
