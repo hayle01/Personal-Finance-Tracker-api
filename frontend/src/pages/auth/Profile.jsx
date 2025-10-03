@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import useAuthStore from "../../lib/Store/authStore";
 import { useMutation } from "@tanstack/react-query";
-import api from "../../lib/api/apiClient"
+import api from "@/lib/api/apiClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
